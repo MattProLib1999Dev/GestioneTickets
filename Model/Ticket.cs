@@ -13,19 +13,29 @@ namespace GestioneAccounts.BE.Domain.Models
   {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
-    public int AccountId{ get; set; }
-    public ICollection<Ticket> Valori { get; set; } = new List<Ticket>(); 
-    [NotMapped]
-    public Role? Role { get; set; }
+
+    [StringLength(30), MinLength(5)]
+    public string Titolo { get; set; } = string.Empty;
+
+    [StringLength(100), MinLength(2)]
+    public string Descrizione { get; set; } = string.Empty;
+    [StringLength(20), MinLength(2)]
+    public Categoria Categoria { get; set; } = Categoria.None;
+    public Role? Role { get; set; } = null;
+    [StringLength(100), MinLength(2)]
     public string Nome { get; set; } = string.Empty;
-    public string Voce { get; set; } = string.Empty;
     public string ValoreString { get; set; } = string.Empty;
+
+    [DataType(DataType.DateTime)]
     public DateTime DataCreazione { get; set; } = DateTime.Now;
 
-    [StringLength(1), MinLength(1)]
-    public double OreLavorate { get; set; } = 0.0;
-        public ICollection<Role> Roles { get; set; } = new List<Role>();  
+    [DataType(DataType.DateTime)]
+    public DateTime DataChiusura { get; set; } = DateTime.Now;
 
+    [StringLength(1), MinLength(1)]
+    public bool Canc { get; set; } = false;
+
+    public int ID_utente { get; set; } = 0;
 
 
   }
