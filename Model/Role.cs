@@ -12,7 +12,6 @@ public class Role : IdentityUser
     public Guid AccountId { get; set; } = Guid.Empty;
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();  // ✅
     public string Roles { get; set; } = string.Empty;
-
     public string Name { get; set; } = string.Empty;
 
 
