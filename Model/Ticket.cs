@@ -27,10 +27,10 @@ namespace GestioneAccounts.BE.Domain.Models
     public string ValoreString { get; set; } = string.Empty;
 
     [DataType(DataType.DateTime)]
-    public DateTime DataCreazione { get; set; } = DateTime.Now;
+    public DateTime? DataCreazione { get; set; } 
 
     [DataType(DataType.DateTime)]
-    public DateTime DataChiusura { get; set; } = DateTime.Now;
+    public DateTime? DataChiusura { get; set; } 
 
     [StringLength(1), MinLength(1)]
     public bool Canc { get; set; } = false;
