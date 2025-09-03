@@ -1,6 +1,5 @@
 using GestioneAccounts.Abstractions;
 using GestioneAccounts.BE.Domain.Models;
-using GestioneAccounts.DataAccess;
 using GestioneAccounts.Posts.Queries;
 using GestioneTickets.Abstractions;
 using MediatR;
