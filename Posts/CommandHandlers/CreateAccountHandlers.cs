@@ -1,8 +1,9 @@
 
-using MediatR;
-using GestioneAccounts.DataAccess.Repositories;
-using GestioneAccounts.Posts.Commands;
 using GestioneAccounts.BE.Domain.Models;
+using GestioneAccounts.Posts.Commands;
+using GestioneTickets.DataAccess.Repositories;
+using MediatR;
+
 
 namespace GestioneTickets.Posts.CommandHandlers;
 public class CreateTicketHandlers : IRequestHandler<CreateTicket, Ticket>
