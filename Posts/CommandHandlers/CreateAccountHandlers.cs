@@ -1,4 +1,3 @@
-using GestioneAccounts.Abstractions;
 using GestioneAccounts.BE.Domain.Models;
 using GestioneAccounts.Posts.Commands;
 using GestioneTickets.Abstractions;
