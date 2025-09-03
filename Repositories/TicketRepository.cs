@@ -1,11 +1,8 @@
-using GestioneAccounts.Abstractions;
 using GestioneAccounts.BE.Domain.Models;
-using MediatR;
-using GestioneTickets.DataAccess; // Add the namespace containing ApplicationDbContext
 using Microsoft.EntityFrameworkCore;
 using GestioneTickets.Abstractions;
 
-namespace GestioneAccounts.DataAccess.Repositories
+namespace GestioneTickets.DataAccess.Repositories
 {
   public class TicketRepository(ApplicationDbContext applicationDbContext) : ITicketRepository
   {
