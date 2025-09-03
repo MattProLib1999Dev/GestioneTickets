@@ -1,5 +1,4 @@
 using GestioneAccounts.BE.Domain.Models;
-using GestioneAccounts.DataAccess;
 
 namespace GestioneTickets.Abstractions
 {

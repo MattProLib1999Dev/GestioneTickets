@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using GestioneAccounts.DataAccess.Repositories;
 using GestioneAccounts.BE.Domain.Models;
 using GestioneAccounts.Posts.Queries;
 using GestioneAccounts.Posts.Commands;
+using GestioneTickets.DataAccess.Repositories;
 
 
 namespace GestioneAccounts.Controllers
@@ -131,15 +131,15 @@ namespace GestioneAccounts.Controllers
 
             // PUT: api/Account/{id}
             [HttpPut("{id}")]
-            public async Task<IActionResult> UpdateAccount(int id, [FromBody] UpdateAccountCommand command)
+            public async Task<IActionResult> UpdateAccount(int id, [FromBody] UpdateTicket command)
             {
                 if (command == null)
                 {
                     return BadRequest("Account data is required.");
                 }
 
-                command.Id = id;
-                var updatedAccount = await _mediator.Send(command);
+            command.Id = Guid.Empty;
+            var updatedAccount = await _mediator.Send(command);
 
                 if (updatedAccount == null)
                 {
@@ -182,7 +182,7 @@ namespace GestioneAccounts.Controllers
                 }
 
                 // ✅ Se esiste, prosegui con MediatR
-                var query = new SearchAccount { Nome = nome };
+                var query = new SearchTicket { Nome = nome };
                 var result = await _mediator.Send(query);
 
                 return Ok(result);

@@ -1,4 +1,3 @@
-using GestioneAccounts.DataAccess;
 using GestioneTickets.Model;
 using MediatR;
 using GestioneTickets.DataAccess;

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using GestioneAccounts.DataAccess;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;

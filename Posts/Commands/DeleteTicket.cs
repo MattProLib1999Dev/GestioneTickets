@@ -1,4 +1,3 @@
-using GestioneAccounts.DataAccess;
 using MediatR;
 
 namespace GestioneAccounts.Posts.Commands

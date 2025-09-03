@@ -177,3 +177,4 @@ C:\Users\matteo.proietti\progetti\Progetti personali e esercitazioni\GestioneTic
 C:\Users\matteo.proietti\progetti\Progetti personali e esercitazioni\GestioneTicket\BE\GestioneTickets\obj\Debug\net8.0\GestioneTickets.pdb
 C:\Users\matteo.proietti\progetti\Progetti personali e esercitazioni\GestioneTicket\BE\GestioneTickets\obj\Debug\net8.0\GestioneTickets.genruntimeconfig.cache
 C:\Users\matteo.proietti\progetti\Progetti personali e esercitazioni\GestioneTicket\BE\GestioneTickets\obj\Debug\net8.0\ref\GestioneTickets.dll
+C:\Users\matteo.proietti\progetti\Progetti personali e esercitazioni\GestioneTicket\BE\GestioneTickets\obj\Debug\net8.0\GestioneTickets.sourcelink.json
