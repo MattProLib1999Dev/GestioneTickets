@@ -13,6 +13,8 @@ using Microsoft.SqlServer.Server;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using GestioneTickets.Configuration;
+using GestioneTickets.DataAccess.Repositories;
+using GestioneTickets.Abstractions;
 
 
 
@@ -97,6 +99,8 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Gestione Tcikets API", Version = "v1" });
 });
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+
 
 
 
