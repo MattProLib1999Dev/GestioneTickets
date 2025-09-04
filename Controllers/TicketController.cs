@@ -15,11 +15,11 @@ namespace GestioneAccounts.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AccountController : Controller
+    public class TicketController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly IMediator _mediator;
-        private readonly ILogger<AccountController> _logger;
+        private readonly ILogger<TicketController> _logger;
         public readonly TicketRepository accountRepository;
         private readonly IWebHostEnvironment _env;
         private readonly IMapper _mapper;
@@ -27,13 +27,13 @@ namespace GestioneAccounts.Controllers
 
 
 
-        public AccountController(
-        ILogger<AccountController> logger,
+        public TicketController(
+        ILogger<TicketController> logger,
         ApplicationDbContext context,
         IMediator mediator,
         IWebHostEnvironment env,
         IMapper mapper,
-        UserManager<Ticket> userManager) // ✅ Assicurati che sia passato qui
+        UserManager<Ticket> userManager) 
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _context = context ?? throw new ArgumentNullException(nameof(context));

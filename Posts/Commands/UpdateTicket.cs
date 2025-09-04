@@ -3,6 +3,7 @@ using MediatR;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using GestioneTickets.Model;
+using System.Text.Json.Serialization;
 
 public class UpdateTicket : IRequest<Ticket>
 {
@@ -16,6 +17,9 @@ public class UpdateTicket : IRequest<Ticket>
     public string Descrizione { get; set; } = string.Empty;
     [StringLength(20), MinLength(2)]
     public Categoria Categoria { get; set; } = Categoria.None;
+
+    [StringLength(20), MinLength(2)]
+    [JsonIgnore]
     public Role? Role { get; set; } = null;
     [StringLength(100), MinLength(2)]
     public string Nome { get; set; } = string.Empty;

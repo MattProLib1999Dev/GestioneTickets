@@ -29,7 +29,7 @@ namespace GestioneTickets.Posts.CommandHandlers
                 ID_utente = request.ID_utente
             };
 
-            await _ticketRepository.CreateTicket(ticket); // ✅ ora chiama dal contratto
+            await _ticketRepository.CreateTicket(ticket); 
             return ticket;
         }
     }
