@@ -23,13 +23,13 @@ namespace GestioneTickets.Controllers
   {
     private readonly ILogger<AuthManagmentController> _logger;
     private readonly ApplicationDbContext _context;
-    private readonly UserManager<Ticket> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly JwtConfig _jwtConfig;
 
     public AuthManagmentController(
         ILogger<AuthManagmentController> logger,
         ApplicationDbContext context,
-        UserManager<Ticket> userManager,
+        UserManager<ApplicationUser> userManager,
         IOptionsMonitor<JwtConfig> optionsMonitor)
     {
       _logger = logger;
@@ -39,7 +39,7 @@ namespace GestioneTickets.Controllers
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] TicketsRegistrationRequestDto model)
+    public async Task<IActionResult> Register([FromBody] GetAccountDto model)
     {
       if (!ModelState.IsValid)
       {
@@ -52,7 +52,7 @@ namespace GestioneTickets.Controllers
         return BadRequest(new { Message = "Email already registered." });
       }
 
-      var newUser = new Ticket
+      var newUser = new ApplicationUser
       {
         Email = model.Email,
         UserName = model.Email,
@@ -102,7 +102,7 @@ namespace GestioneTickets.Controllers
 
 
 
-    private string GenerateJwtToken(Ticket user)
+    private string GenerateJwtToken(ApplicationUser user)
     {
       var jwtTokenHandler = new JwtSecurityTokenHandler();
       var key = Encoding.ASCII.GetBytes(_jwtConfig.Secret);

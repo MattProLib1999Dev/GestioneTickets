@@ -267,10 +267,8 @@ namespace GestioneAccounts.Controllers
 
                         return new GetAccountDto
                         {
-                            Id = idGuid.ToString(),
                             Email = account.Email,
-                            UserName = account.UserName,
-                            Roles = ruoloNomi.ToString()// supponendo che GetAccountDto abbia questa proprietà
+                            Password = account.Password,
                         };
                     }).ToList();
 

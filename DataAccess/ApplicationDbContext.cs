@@ -1,34 +1,20 @@
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using GestioneAccounts.BE.Domain.Models;
 using GestioneTickets.Model;
-
-
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace GestioneTickets.DataAccess
-
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        public DbSet<Ticket> Tickets { get; set; }
-        public DbSet<Role> Role { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
         }
 
-        public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
-
-            services.AddIdentity<Ticket, Role>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddSignInManager()
-                .AddDefaultTokenProviders();
-
-        }
+        public DbSet<Ticket> Tickets { get; set; } = null!;
+        public DbSet<Role> Role { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -41,7 +27,6 @@ namespace GestioneTickets.DataAccess
             modelBuilder.Entity<Role>()
                 .HasMany(r => r.Tickets)
                 .WithOne(v => v.Role);
-
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

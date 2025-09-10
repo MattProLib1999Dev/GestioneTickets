@@ -6,6 +6,7 @@ using System.Xml.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
 using GestioneTickets.Model;
+using System.ComponentModel;
 
 namespace GestioneAccounts.BE.Domain.Models
 {
@@ -36,6 +37,9 @@ namespace GestioneAccounts.BE.Domain.Models
     public bool Canc { get; set; } = false;
 
     public int ID_utente { get; set; } = 0;
+
+    [StringLength(100), MinLength(2),PasswordPropertyText(true)]
+    public string Password { get; set; } = string.Empty;
 
 
   }

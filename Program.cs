@@ -11,10 +11,12 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.SqlServer.Server;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using GestioneTickets.Configuration;
 using GestioneTickets.DataAccess.Repositories;
 using GestioneTickets.Abstractions;
+using GestioneAccounts.Abstractions;
+using GestioneAccounts.Repositories;
+using GestioneAccounts.BE.Domain.Models;
 
 
 
@@ -28,19 +30,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // 2. JWT Config
 builder.Services.Configure<JwtConfig>(
     builder.Configuration.GetSection("JwtConfig"));
-
-
-// 3. Identity
-/* builder.Services.AddIdentity<Account, IdentityRole>(options =>
-{
-    options.SignIn.RequireConfirmedAccount = false;
-    options.User.RequireUniqueEmail = true;
-})
-.AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders(); */
-
-// 4. Repository DI
-// builder.Services.AddScoped<...>();
 
 // 5. MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
@@ -93,6 +82,15 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.WriteIndented = true;
     });
 
+// 3. MediatR
+// Registra tutti gli handler nel progetto corrente (o assembly specifici)
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+    // oppure se i tuoi handler stanno in un altro assembly:
+    // cfg.RegisterServicesFromAssembly(typeof(TuoHandler).Assembly);
+});
+
 // 10. Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -100,6 +98,19 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Gestione Tickets API", Version = "v1" });
 });
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
+
+
+
 
 
 
