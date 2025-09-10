@@ -38,7 +38,11 @@ namespace GestioneTickets.DataAccess
                 .HasOne(v => v.Role)
                 .WithMany(r => r.Tickets);
 
-               }
+            modelBuilder.Entity<Role>()
+                .HasMany(r => r.Tickets)
+                .WithOne(v => v.Role);
+
+        }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
