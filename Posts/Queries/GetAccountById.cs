@@ -3,7 +3,7 @@ using MediatR;
 
 namespace GestioneAccounts.Posts.Queries
 {
-	public class GetTicketById: IRequest<Account>
+	public class GetAccountById: IRequest<Ticket>
 	{
         public long Id { get; set; } = 0;
     }

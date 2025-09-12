@@ -1,15 +1,16 @@
 using GestioneAccounts.BE.Domain.Models;
+using GestioneAccounts.DataAccess;
 
-namespace GestioneTickets.Abstractions
+namespace GestioneAccounts.Abstractions
 {
-    public interface ITicketRepository
+    public interface IAccountRepository
     {
-        Task<ICollection<Ticket>> GetAllTicket();
-        Task<Ticket> GetTicketById(string ticketId);
-        Task<Ticket> CreateTicket(Ticket ticket);
-        Task<Ticket> UpdateTicket(string? nome, int ticketId);
-        Task<bool> DeleteTicket(string ticketId);
-        Task<ICollection<Ticket>> SearchTickets(string? nome, DateTime? dataCreazione, DateTime? dataChiusura, string? categoria);
+        Task<ICollection<Account>> GetAllAccounts();
+        Task<Account> GetAccountById(string accountId);
+        Task<Account> CreateAccount(Account account);
+        Task<Account> UpdateAccount(string? nome, int accountId);
+        Task<bool> DeleteAccount(int accountId);
+        Task<ICollection<Account>> SearchAccounts(string? nome, DateTime? dataCreazione, string? valoreString, string? voce);
 
     }
 }

@@ -1,34 +1,29 @@
 using GestioneAccounts.Abstractions;
 using GestioneAccounts.BE.Domain.Models;
-using GestioneTickets.Abstractions;
 using MediatR;
 
-public class UpdateAccountHandler(ITicketRepository accountRepository) : IRequestHandler<UpdateTicket, Ticket>
+public class UpdateAccountHandler(IAccountRepository accountRepository) : IRequestHandler<UpdateAccount, Account>
 {
-    private readonly ITicketRepository _accountRepository = accountRepository;
+    private readonly IAccountRepository _accountRepository = accountRepository;
 
-  public async Task<Ticket> Handle(UpdateTicket request, CancellationToken cancellationToken)
+    public async Task<Account> Handle(UpdateAccount request, CancellationToken cancellationToken)
     {
-        // Verifica che l'ID non sia zero
-        if (request.Id == null || request.Id == Guid.Empty)
+        // Verifica che l'ID non sia vuoto
+        if (request.Id == 0)
         {
-            throw new ArgumentNullException(nameof(request.Id), "Account Id cannot be null or zero.");
+            throw new ArgumentException("Account Id cannot be empty.", nameof(request.Id));
         }
 
         // Verifica che il nome non sia vuoto
-        if (string.IsNullOrEmpty(request.Nome))
+        if (string.IsNullOrWhiteSpace(request.Nome))
         {
             throw new ArgumentException("Account name cannot be null or empty.", nameof(request.Nome));
         }
 
-        // A questo punto possiamo usare il repository per aggiornare l'account
-        var accountModified = await _accountRepository.UpdateTicket(request.Nome, request.Id.GetHashCode())
+        // Aggiorna l'account tramite repository
+        var accountModified = await _accountRepository.UpdateAccount(request.Nome, request.Id)
             ?? throw new KeyNotFoundException("Account not found.");
 
         return accountModified;
     }
-
-    
-
-
 }

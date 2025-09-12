@@ -22,6 +22,87 @@ namespace GestioneTickets.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("GestioneAccounts.BE.Domain.Models.Account", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DataCreazione")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("OreLavorate")
+                        .HasMaxLength(1)
+                        .HasColumnType("float");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ValoreString")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Voce")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Account");
+                });
+
             modelBuilder.Entity("GestioneAccounts.BE.Domain.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -110,6 +191,9 @@ namespace GestioneTickets.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<int>("AccountId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("Canc")
                         .HasMaxLength(1)
                         .HasColumnType("bit");
@@ -195,6 +279,8 @@ namespace GestioneTickets.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AccountId");
+
                     b.HasIndex("RoleId");
 
                     b.ToTable("Tickets");
@@ -213,6 +299,9 @@ namespace GestioneTickets.Migrations
 
                     b.Property<Guid>("AccountId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("AccountId1")
+                        .HasColumnType("int");
 
                     b.Property<string>("ConcurrencyStamp")
                         .HasColumnType("nvarchar(max)");
@@ -262,6 +351,8 @@ namespace GestioneTickets.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId1");
 
                     b.ToTable("Role");
                 });
@@ -401,11 +492,26 @@ namespace GestioneTickets.Migrations
 
             modelBuilder.Entity("GestioneAccounts.BE.Domain.Models.Ticket", b =>
                 {
+                    b.HasOne("GestioneAccounts.BE.Domain.Models.Account", "Account")
+                        .WithMany("Ticket")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("GestioneTickets.Model.Role", "Role")
                         .WithMany("Tickets")
                         .HasForeignKey("RoleId");
 
+                    b.Navigation("Account");
+
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("GestioneTickets.Model.Role", b =>
+                {
+                    b.HasOne("GestioneAccounts.BE.Domain.Models.Account", null)
+                        .WithMany("Roles")
+                        .HasForeignKey("AccountId1");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -457,6 +563,13 @@ namespace GestioneTickets.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("GestioneAccounts.BE.Domain.Models.Account", b =>
+                {
+                    b.Navigation("Roles");
+
+                    b.Navigation("Ticket");
                 });
 
             modelBuilder.Entity("GestioneTickets.Model.Role", b =>

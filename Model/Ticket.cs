@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
 using GestioneTickets.Model;
 using System.ComponentModel;
+using Microsoft.Identity.Client;
 
 namespace GestioneAccounts.BE.Domain.Models
 {
@@ -14,6 +15,7 @@ namespace GestioneAccounts.BE.Domain.Models
   {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
+    public int AccountId { get; set; } = 0;
 
     [StringLength(30), MinLength(5)]
     public string Titolo { get; set; } = string.Empty;
@@ -40,6 +42,7 @@ namespace GestioneAccounts.BE.Domain.Models
 
     [StringLength(100), MinLength(2),PasswordPropertyText(true)]
     public string Password { get; set; } = string.Empty;
+    public Account Account { get; set; } = new Account();
 
 
   }

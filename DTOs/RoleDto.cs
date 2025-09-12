@@ -3,13 +3,11 @@ using GestioneAccounts.BE.Domain.Models;
 
 public class RoleDto
 {
-  public Guid AccountId { get; set; }
-  public string Roles { get; set; } = string.Empty;
-  public List<Guid> RolesId { get; set; } = new List<Guid>();
+    public Guid AccountId { get; set; }
+    public string Roles { get; set; } = string.Empty;
+    public List<Guid> RolesId { get; set; } = new List<Guid>();
 
-
-  [JsonIgnore]
-
+    [JsonIgnore]
     public ICollection<Ticket> Accounts { get; set; } = new List<Ticket>();
 
 
