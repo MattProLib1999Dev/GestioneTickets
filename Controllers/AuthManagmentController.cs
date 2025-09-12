@@ -1,21 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using GestioneAccounts.BE.Domain.Models;
 using GestioneTickets.Configuration;
-using System.Text.Json;
 using System.Text;
 using AutoMapper;
-using MediatR;
-
 using System.IdentityModel.Tokens.Jwt;
-using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using GestioneTickets.DTOs;
 using GestioneTickets.DataAccess;
+using GestioneTickets.DTOs;
+using GestioneAccounts.BE.Domain.Models;
+using GestioneAccounts.DataAccess.Repositories;
 namespace GestioneTickets.Controllers
 
 {
@@ -48,57 +44,29 @@ namespace GestioneTickets.Controllers
         }
 
         [HttpPost("create")]
-[AllowAnonymous]
-[ProducesResponseType(typeof(Account), 200)]
-public async Task<IActionResult> CreateAccount([FromBody] CreateAccountDto dto, [FromServices] IHttpClientFactory httpClientFactory)
-{
-    var account = new Account
-    {
-        Nome = dto.Nome,
-        Voce = dto.Voce,
-        DataCreazione = dto.DataCreazione,
-        OreLavorate = dto.OreLavorate,
-        UserName = dto.Nome,
-        Email = dto.Email
-    };
-
-    var result = await _account.CreateAsync(account, dto.Password);
-
-    if (!result.Succeeded)
-        return BadRequest(result.Errors);
-
-    // ----> In parallelo: chiamo anche l’API Register (fire-and-forget)
-    var client = httpClientFactory.CreateClient();
-
-    var registerModel = new GetAccountDto
-    {
-        Email = dto.Email,
-        Password = dto.Password
-    };
-
-    var json = JsonSerializer.Serialize(registerModel);
-    var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-    // Chiamata parallela senza bloccare la risposta principale
-    _ = Task.Run(async () =>
-    {
-        try
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(Account), 200)]
+        public async Task<IActionResult> CreateAccountWithRegister([FromBody] CreateAccountDto dto, [FromServices] AccountRepository accountRepository)
         {
-            var response = await client.PostAsync("https://localhost:5001/api/Account/register", content);
-            if (!response.IsSuccessStatusCode)
+            var account = new Account
             {
-                _logger.LogWarning("Chiamata parallela a Register fallita: {StatusCode}", response.StatusCode);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Errore nella chiamata parallela a Register");
-        }
-    });
+                Nome = dto.Nome,
+                Voce = dto.Voce,
+                DataCreazione = dto.DataCreazione,
+                OreLavorate = dto.OreLavorate,
+                UserName = dto.Nome,
+                Email = dto.Email
+            };
 
-    var accountDto = _mapper.Map<CreateAccountDto>(account);
-    return Ok(accountDto);
-}
+            var result = await _account.CreateAsync(account, dto.Password);
+
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            await accountRepository.CreateAccount(account);
+            var accountDto = _mapper.Map<CreaAccountDtoOutput>(account);
+            return Ok(accountDto);
+        }
 
 
         [HttpPost("login")]
@@ -131,11 +99,6 @@ public async Task<IActionResult> CreateAccount([FromBody] CreateAccountDto dto, 
                 Token = token
             });
         }
-
-
-
-
-
         private string GenerateJwtToken(Account account)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
@@ -161,4 +124,5 @@ public async Task<IActionResult> CreateAccount([FromBody] CreateAccountDto dto, 
             return jwtTokenHandler.WriteToken(token);
         }
     }
+
 }

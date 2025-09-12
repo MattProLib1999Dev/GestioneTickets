@@ -27,7 +27,7 @@ namespace GestioneAccounts.BE.Domain.Models
     public Role? Role { get; set; } = null;
     [StringLength(100), MinLength(2)]
     public string Nome { get; set; } = string.Empty;
-    public string ValoreString { get; set; } = string.Empty;
+    public string Cognome { get; set; } = string.Empty;
 
     [DataType(DataType.DateTime)]
     public DateTime? DataCreazione { get; set; } 

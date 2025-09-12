@@ -93,7 +93,6 @@ namespace GestioneAccounts.Controllers
                     Categoria = dto.Categoria,
                     Role = dto.Role,
                     Nome = dto.Nome,
-                    ValoreString = dto.ValoreString,
                     DataCreazione = dto.DataCreazione,
                     DataChiusura = dto.DataChiusura,
                     Canc = dto.Canc,

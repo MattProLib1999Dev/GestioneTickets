@@ -5,7 +5,7 @@ using GestioneAccounts.BE.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 namespace GestioneTickets.Model;
 
-public class Role : IdentityUser
+public class Role : IdentityRole<int>
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity), JsonIgnore]
     public int Id { get; set; }
