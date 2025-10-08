@@ -14,12 +14,11 @@ public class CreateRoleHandler : IRequestHandler<CreateRoleCommand, Role>
     {
         var role = new Role
         {
-            AccountId = request.AccountId,
+            Id = request.Id,
             Name = request.Name,
-            Roles = request.Roles
         };
 
-        _context.Role.Add(role);
+        _context.Roles.Add(role);
         await _context.SaveChangesAsync();
 
         return role;

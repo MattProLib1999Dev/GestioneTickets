@@ -1,4 +1,3 @@
-using GestioneAccounts.Abstractions;  // Assicurati di avere la using corretta
 using GestioneAccounts.Posts.Commands;
 using GestioneTickets.Abstractions;
 using MediatR;
@@ -20,7 +19,7 @@ namespace GestioneAccounts.Posts.CommandHandlers
         public async Task<Unit> Handle(DeleteTicket request, CancellationToken cancellationToken)
         {
             // Qui dovrai chiamare il metodo per cancellare l'account
-            await _accountRepository.DeleteTicket(request.Id.ToString());
+            await _accountRepository.DeleteTicket(request.Id);
 
             return Unit.Value;
         }

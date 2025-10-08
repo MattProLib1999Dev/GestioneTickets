@@ -10,7 +10,7 @@ namespace GestioneAccounts.Posts.Commands
     public class CreateTicket : IRequest<Ticket>
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid Id { get; set; }
+        public int Id { get; set; }
 
         [StringLength(30), MinLength(5)]
         public string Titolo { get; set; } = string.Empty;
@@ -28,6 +28,8 @@ namespace GestioneAccounts.Posts.Commands
 
         [StringLength(30), MinLength(2), EmailAddress]
         public string Email { get; set; } = string.Empty;
+        [StringLength(30), MinLength(2), EmailAddress]
+        public string Password { get; set; } = string.Empty;
         
         [StringLength(1), MinLength(2), EmailAddress]
         public bool EmailConfirmed { get; set; } = false;

@@ -2,6 +2,7 @@ using GestioneAccounts.BE.Domain.Models;
 using GestioneAccounts.Posts.Commands;
 using GestioneTickets.Abstractions; 
 using MediatR;
+using GestioneTickets.Model;
 
 namespace GestioneTickets.Posts.CommandHandlers
 {
@@ -18,15 +19,12 @@ namespace GestioneTickets.Posts.CommandHandlers
         {
             var ticket = new Ticket
             {
-                Titolo = request.Titolo,
-                Descrizione = request.Descrizione,
-                Categoria = request.Categoria,
-                Role = request.Role,
+                Id = request.Id,
                 Nome = request.Nome,
-                DataCreazione = request.DataCreazione,
-                DataChiusura = request.DataChiusura,
-                Canc = request.Canc,
-                ID_utente = request.ID_utente
+                Password = request.Password,
+                Email = request.Email,
+                Role = request.Role
+
             };
 
             await _ticketRepository.CreateTicket(ticket); 

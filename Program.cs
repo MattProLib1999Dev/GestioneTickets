@@ -8,23 +8,22 @@ using System.Text;
 using MediatR;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
-using GestioneTickets.DataAccess.Repositories;
+using GestioneTickets.Repositories;
 using GestioneTickets.Abstractions;
-using GestioneAccounts.Abstractions;
-using GestioneAccounts.DataAccess.Repositories;
+using AutoMapper;
 using GestioneTickets.Model;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Forza TLS 1.2 (opzionale per sicurezza aziendale)
-AppContext.SetSwitch("System.Net.Security.UseLegacySslProtocols", false);
-System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+// AutoMapper
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-// 1️⃣ DbContext
+// DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 2️⃣ Identity con Account e Role personalizzati
+// Identity con ruoli
 builder.Services.AddIdentity<Account, Role>(options =>
 {
     options.Password.RequireDigit = true;
@@ -35,7 +34,7 @@ builder.Services.AddIdentity<Account, Role>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// 3️⃣ JWT
+// JWT
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfig"));
 var secret = builder.Configuration["JwtConfig:Secret"]!;
 var key = Encoding.ASCII.GetBytes(secret);
@@ -58,14 +57,15 @@ builder.Services.AddAuthentication(options =>
     options.SaveToken = true;
 });
 
-// 4️⃣ MediatR
+// MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
-// 5️⃣ Repository DI
-builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+// Repository
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<IImageRepository, ImageRepository>();
 
-// 6️⃣ Controllers + JSON
+// Controllers + JSON
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -74,7 +74,18 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.WriteIndented = true;
     });
 
-// 7️⃣ Swagger
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -82,6 +93,8 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+
 
 // Middleware
 if (app.Environment.IsDevelopment())
@@ -91,8 +104,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();

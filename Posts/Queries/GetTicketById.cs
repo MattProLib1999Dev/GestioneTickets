@@ -1,7 +1,7 @@
-using GestioneAccounts.BE.Domain.Models;
+using GestioneTickets.Model;
 using MediatR;
 
-namespace GestioneAccounts.Posts.Queries
+namespace GestioneTickets.Posts.Queries
 {
 	public class GetTicketById: IRequest<Account>
 	{

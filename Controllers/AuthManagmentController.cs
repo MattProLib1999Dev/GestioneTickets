@@ -1,72 +1,98 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
-using GestioneTickets.Configuration;
-using System.Text;
 using AutoMapper;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using GestioneTickets.DataAccess;
+using GestioneTickets.Abstractions;
+using GestioneTickets.Configuration;
 using GestioneTickets.DTOs;
-using GestioneAccounts.BE.Domain.Models;
-using GestioneAccounts.DataAccess.Repositories;
-namespace GestioneTickets.Controllers
+using GestioneTickets.Model;
+using GestioneTickets.Repositories;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
 
+
+
+namespace GestioneTickets.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class AuthManagmentController : ControllerBase
     {
         private readonly ILogger<AuthManagmentController> _logger;
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<Account> _account;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly UserManager<Account> _userManager;
+        private readonly RoleManager<Role> _roleManager;
+        private readonly IAccountRepository _accountRepository;
         private readonly JwtConfig _jwtConfig;
         private readonly IMapper _mapper;
 
-
         public AuthManagmentController(
-            ILogger<AuthManagmentController> logger,
-            ApplicationDbContext context,
-            UserManager<Account> account,
-            UserManager<ApplicationUser> userManager,
-            IOptionsMonitor<JwtConfig> optionsMonitor,
-            IMapper mapper)
+    ILogger<AuthManagmentController> logger,
+    UserManager<Account> userManager,
+    RoleManager<Role> roleManager,  // <- aggiungi
+    IAccountRepository accountRepository,
+    IOptionsMonitor<JwtConfig> optionsMonitor,
+    IMapper mapper)
         {
             _logger = logger;
-            _context = context;
-            _account = account;
+            _userManager = userManager;
+            _roleManager = roleManager;      // <- assegna
+            _accountRepository = accountRepository;
             _mapper = mapper;
             _jwtConfig = optionsMonitor.CurrentValue;
-            _userManager = userManager;
         }
 
-        [HttpPost("create")]
-        [AllowAnonymous]
-        [ProducesResponseType(typeof(Account), 200)]
-        public async Task<IActionResult> CreateAccountWithRegister([FromBody] CreateAccountDto dto, [FromServices] AccountRepository accountRepository)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] GetAllAccountDto registration)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (registration == null)
+                return BadRequest("Dati di registrazione non validi.");
+
+            _logger.LogInformation($"Registration attempt for {registration.Email}");
+
+            // Controlla se l'email esiste già
+            var emailExist = await _userManager.FindByEmailAsync(registration.Email);
+            if (emailExist != null)
+                return BadRequest("Email già in uso.");
+
+            // Creazione dell'utente senza impostare direttamente la password
             var account = new Account
             {
-                Nome = dto.Nome,
-                Voce = dto.Voce,
-                DataCreazione = dto.DataCreazione,
-                OreLavorate = dto.OreLavorate,
-                UserName = dto.Nome,
-                Email = dto.Email
+                UserName = registration.Email,
+                Email = registration.Email,
+                Nome = registration.Nome,
+                Cognome = registration.Cognome,
+                DataCreazione = DateTime.UtcNow
             };
 
-            var result = await _account.CreateAsync(account, dto.Password);
+            // Passa la password a UserManager
+            var result = await _userManager.CreateAsync(account, registration.Password);
 
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            await accountRepository.CreateAccount(account);
-            var accountDto = _mapper.Map<CreaAccountDtoOutput>(account);
-            return Ok(accountDto);
+            // Controlla se il ruolo "User" esiste e, se non c'è, lo crea
+            if (!await _roleManager.RoleExistsAsync("User"))
+            {
+                await _roleManager.CreateAsync(new Role { Name = "User", NormalizedName = "USER" });
+            }
+
+            // Assegna il ruolo "User" all'utente appena creato
+            await _userManager.AddToRoleAsync(account, "User");
+
+            return Ok(new { Message = "Utente registrato con successo." });
         }
+
+
+
 
 
         [HttpPost("login")]
@@ -74,23 +100,16 @@ namespace GestioneTickets.Controllers
         public async Task<IActionResult> Login([FromBody] TicketsRegistrationRequestDto model)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            var user = await _account.FindByEmailAsync(model.Email);
+            var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
-            {
                 return Unauthorized(new { Message = "Invalid email or password." });
-            }
 
-            var isPasswordValid = await _account.CheckPasswordAsync(user, model.Password);
+            var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
             if (!isPasswordValid)
-            {
                 return Unauthorized(new { Message = "Invalid email or password." });
-            }
 
-            // Optional: Include user roles or claims if needed
             var token = GenerateJwtToken(user);
 
             return Ok(new
@@ -99,6 +118,7 @@ namespace GestioneTickets.Controllers
                 Token = token
             });
         }
+
         private string GenerateJwtToken(Account account)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
@@ -123,6 +143,6 @@ namespace GestioneTickets.Controllers
             var token = jwtTokenHandler.CreateToken(tokenDescriptor);
             return jwtTokenHandler.WriteToken(token);
         }
-    }
 
+    }
 }

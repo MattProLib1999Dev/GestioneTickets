@@ -5,13 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using GestioneAccounts.BE.Domain.Models;
-using GestioneAccounts.Posts.Queries;
+using GestioneTickets.Model;
 using GestioneAccounts.Posts.Commands;
-using GestioneTickets.DataAccess.Repositories;
+using GestioneTickets.Repositories;
 
 
-namespace GestioneAccounts.Controllers
+namespace GestioneTickets.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -76,27 +75,10 @@ namespace GestioneAccounts.Controllers
             {
                 var ticketObj = new Ticket
                 {
-                    AccessFailedCount = 0,
-                    ConcurrencyStamp = Guid.NewGuid().ToString(),
-                    Email = dto.Descrizione,
-                    EmailConfirmed = false,
-                    LockoutEnabled = false,
-                    LockoutEnd = null,
-                    NormalizedEmail = dto.Descrizione.ToUpper(),
-                    NormalizedUserName = dto.Titolo.ToUpper(),
-                    PhoneNumber = null,
-                    PhoneNumberConfirmed = false,
-                    SecurityStamp = Guid.NewGuid().ToString(),
-                    TwoFactorEnabled = false,
-                    Titolo = dto.Titolo,
-                    Descrizione = dto.Descrizione,
-                    Categoria = dto.Categoria,
-                    Role = dto.Role,
-                    Nome = dto.Nome,
-                    DataCreazione = dto.DataCreazione,
-                    DataChiusura = dto.DataChiusura,
-                    Canc = dto.Canc,
-                    ID_utente = dto.ID_ticket
+                    Id = ticket.Id,
+                    Account = ticket.Account,
+                    AccountId = ticket.AccountId,
+                    Role = ticket.Role
 
                 };
 
@@ -117,7 +99,7 @@ namespace GestioneAccounts.Controllers
             [HttpGet("{id}")]
             public async Task<IActionResult> GetAccountById(int id)
             {
-                var query = new GetTicketById { Id = id };
+                var query = new GetTicketById {Id = id };
                 var account = await _mediator.Send(query);
 
                 if (account == null)
@@ -150,7 +132,7 @@ namespace GestioneAccounts.Controllers
 
             // DELETE: api/Account/Delete/{id}
             [HttpDelete("Delete/{id}")]
-            public async Task<IActionResult> DeleteConfirmed(long id)
+            public async Task<IActionResult> DeleteConfirmed(int id)
             {
                 var deleteAccountCommand = new DeleteTicket { Id = id };
                 var result = await _mediator.Send(deleteAccountCommand);
@@ -242,7 +224,7 @@ namespace GestioneAccounts.Controllers
                 try
                 {
                     var accounts = await _context.Tickets
-                        .Include(a => a.Role) // Include corretto su collection di ruoli
+                        .Include(a => a.Nome) // Include corretto su collection di ruoli
                         .ToListAsync();
 
                     if (accounts == null || !accounts.Any())
@@ -260,8 +242,8 @@ namespace GestioneAccounts.Controllers
                         }
 
                         // Mappatura DTO con lista di ruoli (nomi ruoli)
-                        var ruoloNomi = account.Role != null
-                            ? new List<string> { account.Role.Name }
+                        var ruoloNomi = account.Nome != ""
+                            ? new List<string> { account.Nome }
                             : new List<string>();
 
                         return new GetAccountDto
@@ -298,7 +280,7 @@ namespace GestioneAccounts.Controllers
                 }
 
                 // Trova l'account esistente
-                var account = await _context.Tickets.FirstOrDefaultAsync(a => a.ID_utente == CreateAccountDto.ID_ticket);
+                var account = await _context.Tickets.FirstOrDefaultAsync(a => a.AccountId == CreateAccountDto.ID_ticket);
                 if (account == null)
                 {
                     return NotFound("Account not found.");

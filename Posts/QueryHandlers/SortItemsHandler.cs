@@ -1,7 +1,7 @@
-using GestioneAccounts.Abstractions;
-using GestioneAccounts.BE.Domain.Models;
 using GestioneTickets.Abstractions;
 using MediatR;
+using GestioneTickets.Model;
+
 
 public class SortAccountsHandler(ITicketRepository repository) : IRequestHandler<SortAccountsQuery, List<Ticket>>
 {

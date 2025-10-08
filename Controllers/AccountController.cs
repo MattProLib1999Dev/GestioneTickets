@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
-using GestioneAccounts.Posts.Queries;
-using GestioneAccounts.Posts.Commands;
-using GestioneAccounts.BE.Domain.Models;
-using GestioneAccounts.DataAccess.Repositories;
+using GestioneTickets.Model;
+using GestioneTickets.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
@@ -46,14 +44,15 @@ namespace GestioneAccounts.Controllers
 
         // GET: api/Account/{id}
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(long id)
+        public async Task<IActionResult> GetAccountById(int id)
         {
-            var getAccount = new GetTicketById { Id = id };
-            var account = await _mediator.Send(getAccount);
+            var account = await _context.Account
+                .Include(a => a.Nome)
+                .FirstOrDefaultAsync(a => a.Id == id);
 
             if (account == null)
             {
-                return NotFound();
+                return NotFound(new { message = "Account non trovato." });
             }
 
             return Ok(account);
@@ -61,14 +60,14 @@ namespace GestioneAccounts.Controllers
 
         // PUT: api/Account/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAccount(int id, [FromBody] UpdateAccount command)
+        public async Task<IActionResult> UpdateAccount(string id, [FromBody] GetAccountDto command)
         {
             if (command == null)
             {
                 return BadRequest("Account data is required.");
             }
 
-            command.Id = id;
+            command.AccountId = id;
             var updatedAccount = await _mediator.Send(command);
 
             if (updatedAccount == null)
@@ -81,9 +80,9 @@ namespace GestioneAccounts.Controllers
 
         // DELETE: api/Account/Delete/{id}
         [HttpDelete("Delete/{id}")]
-        public async Task<IActionResult> DeleteConfirmed(long id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var deleteAccountCommand = new DeleteAccount { Id = id };
+            var deleteAccountCommand = new Account { Id = id };
             var result = await _mediator.Send(deleteAccountCommand);
 
             if (result != null)
@@ -111,7 +110,10 @@ namespace GestioneAccounts.Controllers
                 return NotFound(new { message = "Nessun account trovato con questo nome." });
             }
 
-            var query = new SearchTicket { Nome = nome };
+            var query = new SearchAccount
+            {
+                Nome = nome
+            };
             var result = await _mediator.Send(query);
 
             return Ok(result);
@@ -127,7 +129,7 @@ namespace GestioneAccounts.Controllers
             return Ok(accounts);
         }
 
-        [HttpPost("upload")]
+        /* [HttpPost("upload")]
         public IActionResult UploadBase64Image([FromBody] ImageUploadRequest request)
         {
             try
@@ -164,15 +166,15 @@ namespace GestioneAccounts.Controllers
             {
                 return BadRequest(new { error = ex.Message });
             }
-        }
+        } */
 
         [HttpGet("all")]
+        // GET: api/Account/all con mapper
         public async Task<IActionResult> GetAllAccounts()
         {
             try
             {
                 var accounts = await _context.Account
-                    .Include(a => a.Roles) // Include corretto su collection di ruoli
                     .ToListAsync();
 
                 if (accounts == null || !accounts.Any())
@@ -182,22 +184,15 @@ namespace GestioneAccounts.Controllers
 
                 var accountDtos = accounts.Select(account =>
                 {
-                    Guid idGuid;
-                    if (!Guid.TryParse(account.Id.ToString(), out idGuid))
+    
+                    return new Account
                     {
-                        _logger.LogWarning($"Account ID non valido come GUID: {account.Id}");
-                        idGuid = Guid.Empty;
-                    }
-
-                    // Mappatura DTO con lista di ruoli (nomi ruoli)
-                    var ruoloNomi = account.Roles != null
-                        ? account.Roles.Select(r => r.Name).ToList()
-                        : new List<string>();
-
-                    return new GetAccountDto
-                    {
+                        Nome = account.Nome,
+                        Cognome = account.Cognome,
                         Email = account.Email,
-                        Password = account.Password,
+                        DataCreazione = account.DataCreazione,
+                        DataChiusura = account.DataChiusura,
+                        OreLavorate = account.OreLavorate,
                     };
                 }).ToList();
 
@@ -217,6 +212,9 @@ namespace GestioneAccounts.Controllers
             }
         }
 
+
+
+
         // POST: account/approvaOreLavorate
         [HttpPost("approvaOreLavorate")]
         [Authorize(Roles = "Admin")]
@@ -228,7 +226,7 @@ namespace GestioneAccounts.Controllers
             }
 
             // Trova l'account esistente
-            var account = await _context.Account.FirstOrDefaultAsync(a => a.Id == CreateAccountDto.Id);
+            var account = await _context.Account.FirstOrDefaultAsync(a => a.Password == CreateAccountDto.Password);
             if (account == null)
             {
                 return NotFound("Account not found.");
@@ -263,11 +261,12 @@ namespace GestioneAccounts.Controllers
 
             var account = new Account
             {
-                UserName = model.Email,
                 Email = model.Email,
                 Nome = model.Nome,
                 Cognome = model.Cognome,
-                // Inizializza altre proprietà se necessario
+                DataCreazione = model.DataCreazione,
+                OreLavorate = model.OreLavorate,
+                UserName = model.Email // Imposta UserName uguale a Email
             };
 
             var result = await _userManager.CreateAsync(account, model.Password);

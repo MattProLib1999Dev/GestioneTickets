@@ -1,4 +1,5 @@
 C:\Users\matteo.proietti\progetti\Progetti personali e esercitazioni\GestioneTicket\BE\GestioneTickets\bin\Debug\net8.0\appsettings.Development.json
+C:\Users\matteo.proietti\progetti\Progetti personali e esercitazioni\GestioneTicket\BE\GestioneTickets\bin\Debug\net8.0\appsettings.json
 C:\Users\matteo.proietti\progetti\Progetti personali e esercitazioni\GestioneTicket\BE\GestioneTickets\bin\Debug\net8.0\GestioneTickets.exe
 C:\Users\matteo.proietti\progetti\Progetti personali e esercitazioni\GestioneTicket\BE\GestioneTickets\bin\Debug\net8.0\GestioneTickets.deps.json
 C:\Users\matteo.proietti\progetti\Progetti personali e esercitazioni\GestioneTicket\BE\GestioneTickets\bin\Debug\net8.0\GestioneTickets.runtimeconfig.json
@@ -177,4 +178,3 @@ C:\Users\matteo.proietti\progetti\Progetti personali e esercitazioni\GestioneTic
 C:\Users\matteo.proietti\progetti\Progetti personali e esercitazioni\GestioneTicket\BE\GestioneTickets\obj\Debug\net8.0\GestioneTickets.pdb
 C:\Users\matteo.proietti\progetti\Progetti personali e esercitazioni\GestioneTicket\BE\GestioneTickets\obj\Debug\net8.0\GestioneTickets.genruntimeconfig.cache
 C:\Users\matteo.proietti\progetti\Progetti personali e esercitazioni\GestioneTicket\BE\GestioneTickets\obj\Debug\net8.0\ref\GestioneTickets.dll
-C:\Users\matteo.proietti\progetti\Progetti personali e esercitazioni\GestioneTicket\BE\GestioneTickets\bin\Debug\net8.0\appsettings.json

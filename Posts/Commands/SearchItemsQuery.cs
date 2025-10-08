@@ -1,5 +1,5 @@
 using MediatR; // Add this for IRequest<>
-using GestioneAccounts.BE.Domain.Models; // Replace with the correct namespace for Account
+using GestioneTickets.Model;
 
 public class SearchItemsQuery : IRequest<List<Ticket>>
 {

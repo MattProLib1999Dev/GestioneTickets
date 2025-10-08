@@ -1,4 +1,4 @@
-using GestioneAccounts.BE.Domain.Models;
+using GestioneTickets.Model;
 using MediatR;
 
 public class SortAccountsQuery : IRequest<List<Ticket>>

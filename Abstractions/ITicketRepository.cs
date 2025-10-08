@@ -1,4 +1,5 @@
 using GestioneAccounts.BE.Domain.Models;
+using GestioneTickets.Model;
 
 namespace GestioneTickets.Abstractions
 {
@@ -8,8 +9,8 @@ namespace GestioneTickets.Abstractions
         Task<Ticket> GetTicketById(string ticketId);
         Task<Ticket> CreateTicket(Ticket ticket);
         Task<Ticket> UpdateTicket(string? nome, int ticketId);
-        Task<bool> DeleteTicket(string ticketId);
-        Task<ICollection<Ticket>> SearchTickets(string? nome, DateTime? dataCreazione, DateTime? dataChiusura, string? categoria);
+        Task<bool> DeleteTicket(int ticketId);
+        Task<ICollection<Ticket>> SearchTickets(string? nome, string?ticketId, DateTime? dataCreazione, DateTime? dataChiusura, string? categoria);
 
     }
 }

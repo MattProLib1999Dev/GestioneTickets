@@ -1,30 +1,28 @@
-using GestioneTickets.DataAccess;
-using GestioneAccounts.BE.Domain.Models;
+using GestioneTickets.Model;
 using MediatR;
 using GestioneTickets.Abstractions;
 
-public class SearchAccountQueryHandler : IRequestHandler<SearchTicket, Ticket>
+public class SearchAccountQueryHandler : IRequestHandler<SearchAccount, IEnumerable<Account>>
 {
-  public ITicketRepository _accountRepository { get; set; }
-  public SearchAccountQueryHandler(ITicketRepository accountRepository)
-  {
-    _accountRepository = accountRepository;
-  }
+    public IAccountRepository _accountRepository { get; set; }
+    public SearchAccountQueryHandler(IAccountRepository accountRepository)
+    {
+        _accountRepository = accountRepository;
+    }
 
-  // Inietta eventualmente il tuo servizio o contesto dati nel costruttore
+    // Inietta eventualmente il tuo servizio o contesto dati nel costruttore
 
-  public async Task<Ticket> Handle(SearchTicket request, CancellationToken cancellationToken)
-  {
-        // Esegui la logica di ricerca. Esempio:
-        var result = await _accountRepository.SearchTickets(
-            nome: request.Nome,
-            dataCreazione: request.DataCreazione,
-            dataChiusura: request.DataChiusura,
-            categoria: request.Categoria
-        );
-
-        // Restituisci il risultato della ricerca
-        return result.FirstOrDefault() ?? new Ticket();
-  }
+    public async Task<IEnumerable<Account>> Handle(SearchAccount request, CancellationToken cancellationToken)
+    {
+        var result = await _accountRepository.SearchAccounts(request.Nome, request.DataCreazione, request.Categoria, request.Cognome);
+        return result.FirstOrDefault(result.Select(a => new Account
+        {
+            Nome = request.Nome,
+            Cognome = request.Cognome,
+            DataCreazione = request.DataCreazione,
+            DataChiusura = request.DataChiusura,
+        })) ?? Enumerable.Empty<Account>()
+                         .ToList();
+    }
 
 }

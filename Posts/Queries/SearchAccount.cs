@@ -1,10 +1,11 @@
-using GestioneAccounts.BE.Domain.Models;
+using GestioneTickets.Model;
 using MediatR;
 
-public class SearchAccount : IRequest<Account>
+public class SearchAccount : IRequest<IEnumerable<Account>>
 {
-    public string? Nome { get; set; } = string.Empty;
-    public DateTime? DataCreazione { get; set; }
+    public string? Nome { get; set; }
+    public string? Cognome { get; set; }
+    public DateTime DataCreazione { get; set; } = DateTime.Today;
     public DateTime? DataChiusura { get; set; }
     public string? Categoria { get; set; }
 }

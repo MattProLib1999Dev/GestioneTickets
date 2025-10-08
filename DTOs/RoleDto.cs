@@ -1,14 +1,14 @@
 using System.Text.Json.Serialization;
-using GestioneAccounts.BE.Domain.Models;
+using GestioneTickets.Model;
 
 public class RoleDto
 {
-    public Guid AccountId { get; set; }
     public string Roles { get; set; } = string.Empty;
-    public List<Guid> RolesId { get; set; } = new List<Guid>();
+    public int Id = 0;
+    public string Name { get; set; } = string.Empty;
 
     [JsonIgnore]
-    public ICollection<Ticket> Accounts { get; set; } = new List<Ticket>();
+    public ICollection<Account> Accounts { get; set; } = new List<Account>();
 
 
 

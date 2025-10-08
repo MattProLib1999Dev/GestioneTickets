@@ -1,10 +1,8 @@
-using GestioneAccounts.Abstractions;
-using GestioneAccounts.BE.Domain.Models;
-using GestioneAccounts.Posts.Queries;
 using GestioneTickets.Abstractions;
+using GestioneTickets.Model;
 using MediatR;
 
-namespace GestioneAccounts.Posts.QueryHandlers
+namespace GestioneTickets.Posts.QueryHandlers
 {
   public class GetAllTicketsHandlers(ITicketRepository ticketRepository) : IRequestHandler<IRequest<ICollection<Ticket>>, ICollection<Ticket>>
   {

@@ -1,7 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using GestioneTickets.Model;
 using GestioneTickets.DataAccess;
-using GestioneAccounts.BE.Domain.Models; // Ensure this namespace is correct for 'Account'
 public class PaginateItemsHandler : IRequestHandler<PaginateItemsQuery, List<Ticket>>
 {
     private readonly ApplicationDbContext _context;

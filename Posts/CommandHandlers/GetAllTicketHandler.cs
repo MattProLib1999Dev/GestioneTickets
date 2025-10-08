@@ -2,6 +2,7 @@ using GestioneAccounts.BE.Domain.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using GestioneTickets.DataAccess;
+using GestioneTickets.Model;
 
 public class GetAllTicketHandler : IRequestHandler<GetAllTicket, ICollection<Ticket>>
 {
