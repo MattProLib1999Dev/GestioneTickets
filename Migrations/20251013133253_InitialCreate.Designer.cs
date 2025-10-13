@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GestioneTickets.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251008133121_InitialCreate")]
+    [Migration("20251013133253_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -238,12 +238,17 @@ namespace GestioneTickets.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<int>("TicketId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
                         .HasDatabaseName("RoleNameIndex")
                         .HasFilter("[NormalizedName] IS NOT NULL");
+
+                    b.HasIndex("TicketId");
 
                     b.ToTable("AspNetRoles", (string)null);
                 });
@@ -256,80 +261,33 @@ namespace GestioneTickets.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
-
                     b.Property<int>("AccountId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Categoria")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("Categoria")
+                        .HasColumnType("int");
 
-                    b.Property<string>("ConcurrencyStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DataChiusura")
+                    b.Property<DateTime?>("DataChiusura")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("DataCreazione")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Email")
+                    b.Property<string>("Descrizione")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("NormalizedEmail")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("RoleId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("UserName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
-
-                    b.HasIndex("RoleId")
-                        .IsUnique()
-                        .HasFilter("[RoleId] IS NOT NULL");
 
                     b.ToTable("Tickets");
                 });
@@ -393,6 +351,17 @@ namespace GestioneTickets.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Role", b =>
+                {
+                    b.HasOne("Ticket", "Ticket")
+                        .WithMany()
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Ticket");
+                });
+
             modelBuilder.Entity("Ticket", b =>
                 {
                     b.HasOne("Account", "Account")
@@ -401,14 +370,7 @@ namespace GestioneTickets.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Role", "Role")
-                        .WithOne("Ticket")
-                        .HasForeignKey("Ticket", "RoleId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("Account");
-
-                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("Account", b =>
@@ -419,9 +381,6 @@ namespace GestioneTickets.Migrations
             modelBuilder.Entity("Role", b =>
                 {
                     b.Navigation("Account");
-
-                    b.Navigation("Ticket")
-                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

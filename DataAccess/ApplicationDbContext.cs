@@ -31,6 +31,9 @@ public class ApplicationDbContext : IdentityDbContext<Account, Role, int>
         .WithOne(t => t.Account)
         .HasForeignKey(t => t.AccountId)
         .OnDelete(DeleteBehavior.Restrict);
+    
+   
+
 }
 
 }

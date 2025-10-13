@@ -60,7 +60,7 @@ namespace GestioneAccounts.Controllers
 
         // PUT: api/Account/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAccount(string id, [FromBody] GetAccountDto command)
+        public async Task<IActionResult> UpdateAccount(int id, [FromBody] GetAccountDto command)
         {
             if (command == null)
             {

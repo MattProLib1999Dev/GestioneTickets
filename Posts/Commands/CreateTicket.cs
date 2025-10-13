@@ -11,6 +11,7 @@ namespace GestioneAccounts.Posts.Commands
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+        public int AccountId { get; set; }
 
         [StringLength(30), MinLength(5)]
         public string Titolo { get; set; } = string.Empty;

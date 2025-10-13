@@ -1,16 +1,19 @@
-using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-public class Ticket: IdentityUser<int>
+public class Ticket
 {
-    public int? Id { get; set; } = 0;
-    public int? RoleId { get; set; } = 0;
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // Auto-increment
+    public int Id { get; set; }
+
     public string Nome { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
+    public string Descrizione { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
-    public string Categoria { get; set; } = string.Empty;
+    public Categoria? Categoria { get; set; }
     public DateTime DataCreazione { get; set; } = DateTime.Today;
-    public DateTime DataChiusura { get; set; }
-    public int AccountId { get; set; }
+    public DateTime? DataChiusura { get; set; }
+
+    public int AccountId { get; set; } // FK verso Account
     public Account Account { get; set; } = null!;
-    public Role Role { get; set; } = new Role();
 }

@@ -21,10 +21,11 @@ namespace GestioneTickets.Posts.CommandHandlers
             {
                 Id = request.Id,
                 Nome = request.Nome,
-                Password = request.Password,
                 Email = request.Email,
-                Role = request.Role
-
+                Categoria = request.Categoria,
+                DataCreazione = request.DataCreazione,
+                DataChiusura = request.DataChiusura,
+                AccountId = request.AccountId
             };
 
             await _ticketRepository.CreateTicket(ticket); 

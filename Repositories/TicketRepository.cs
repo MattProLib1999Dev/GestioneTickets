@@ -8,12 +8,33 @@ namespace GestioneTickets.Repositories
     {
         private readonly ApplicationDbContext _applicationDbContext = applicationDbContext;
 
-        public async Task<Ticket> CreateTicket(Ticket account)
+        public async Task<Ticket?> CreateTicket(Ticket ticket)
         {
-            _applicationDbContext.Add(account);
-            await _applicationDbContext.SaveChangesAsync();
-            return account;
+            try
+            {
+                // Verifica se l'AccountId esiste nel DB
+                var accountExists = await _applicationDbContext.Account
+                    .AnyAsync(u => u.Id == ticket.Id);
+
+                if (!accountExists)
+                {
+                    // Account non trovato: ritorna null o gestisci diversamente
+                    return null;
+                }
+
+                _applicationDbContext.Tickets.Add(ticket);
+                await _applicationDbContext.SaveChangesAsync();
+
+                return ticket;
+            }
+            catch (DbUpdateException ex)
+            {
+                // Log dell'errore
+                Console.WriteLine(ex.Message);
+                return null;
+            }
         }
+
 
         public async Task<bool> DeleteTicket(long accountId)
         {
@@ -55,7 +76,7 @@ namespace GestioneTickets.Repositories
 
             if (dataChiusura.HasValue)
             {
-                query = query.Where(a => a.DataChiusura.Date == dataChiusura);
+                query = query.Where(a => a.DataChiusura == dataChiusura);
             }
 
             if (!string.IsNullOrEmpty(categoria))

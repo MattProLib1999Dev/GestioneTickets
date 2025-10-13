@@ -72,16 +72,14 @@ public class RoleController : ControllerBase
         try
         {
             var account = await _context.Tickets
-                .Include(a => a.Role)
                 .FirstOrDefaultAsync(a => a.Id == accountId);
 
             if (account == null)
                 return NotFound(new { message = "Account not found." });
 
-            if (account.Role != null)
+            else
                 return Ok(new { message = "User is an admin." });
 
-            return Forbid("User is not an admin.");
         }
         catch (Exception ex)
         {
@@ -100,16 +98,14 @@ public class RoleController : ControllerBase
         try
         {
             var account = await _context.Tickets
-                .Include(a => a.Role)
                 .FirstOrDefaultAsync(a => a.Id == accountId);
 
             if (account == null)
                 return NotFound(new { message = "Account not found." });
 
-            if (account.Role != null)
+           else
                 return Ok(new { message = "User is a standard user." });
 
-            return Forbid("User is not a standard user.");
         }
         catch (Exception ex)
         {

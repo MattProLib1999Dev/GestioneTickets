@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using GestioneTickets.Model;
 using GestioneAccounts.Posts.Commands;
 using GestioneTickets.Repositories;
+using GestioneTickets.Abstractions;
 
 
 namespace GestioneTickets.Controllers
@@ -22,8 +23,7 @@ namespace GestioneTickets.Controllers
         public readonly TicketRepository accountRepository;
         private readonly IWebHostEnvironment _env;
         private readonly IMapper _mapper;
-        private readonly UserManager<Ticket> _userManager;
-
+        public readonly ITicketRepository _ticketRepository;
 
 
         public TicketController(
@@ -32,270 +32,262 @@ namespace GestioneTickets.Controllers
         IMediator mediator,
         IWebHostEnvironment env,
         IMapper mapper,
-        UserManager<Ticket> userManager) 
+        ITicketRepository ticketRepository)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _env = env;
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager)); // ✅
+            _ticketRepository = ticketRepository ?? throw new ArgumentNullException(nameof(ticketRepository));
         }
 
-        // POST: api/Account/create
         [HttpPost("create")]
-        [AllowAnonymous]
-        [ProducesResponseType(typeof(Ticket), 200)]
-        public async Task<IActionResult> CreateTicket([FromBody] CreateTicketDto dto)
+[AllowAnonymous]
+[ProducesResponseType(typeof(CreateTicketDto), 200)]
+[ProducesResponseType(400)]
+public async Task<IActionResult> CreateTicket([FromBody] CreateTicketDto dto)
+{
+    if (dto == null)
+        return BadRequest("Ticket data is required.");
+
+    // Verifica che l'Account esista
+    var account = await _context.Users.FindAsync(dto.AccountId);
+    if (account == null)
+        return BadRequest("Account non trovato.");
+
+    // Crea nuovo ticket
+    var ticketObj = new Ticket
+    {
+        Nome = dto.Nome,
+        Descrizione = dto.Descrizione,
+        Email = dto.Email,
+        Categoria = dto.Categoria,
+        DataCreazione = dto.DataCreazione,
+        DataChiusura = dto.DataChiusura,
+        AccountId = dto.AccountId 
+    };
+
+    try
+    {
+        _context.Tickets.Add(ticketObj);
+        await _context.SaveChangesAsync();
+    }
+    catch (DbUpdateException ex)
+    {
+        // Gestione errori FK
+        if (ex.InnerException != null && ex.InnerException.Message.Contains("FK_Tickets_AspNetUsers_AccountId"))
         {
-            if (dto == null)
-            {
-                return BadRequest("Ticket data is required.");
-            }
-
-            // Mappa DTO a Entity
-            var existingTicket = await _userManager.FindByNameAsync(dto.Titolo);
-            if (existingTicket != null)
-            {
-                return Conflict(new { message = "Titolo già in uso." });
-            }
-
-            existingTicket = await _userManager.FindByNameAsync(dto.Descrizione);
-            if (existingTicket != null)
-            {
-                return Conflict(new { message = "Email già in uso." });
-            }
-
-            // Crea l'account
-            var ticket = await _userManager.FindByIdAsync(dto.ID_ticket.ToString());
-            if (ticket != null)
-            {
-                return Conflict(new { message = "Id ticket già in uso." });
-            }
-            {
-                var ticketObj = new Ticket
-                {
-                    Id = ticket.Id,
-                    Account = ticket.Account,
-                    AccountId = ticket.AccountId,
-                    Role = ticket.Role
-
-                };
-
-                // Usa UserManager per gestire la creazione
-                var result = await _userManager.CreateAsync(ticketObj);
-
-                if (!result.Succeeded)
-                    return BadRequest(result.Errors);
-
-                var accountDto = _mapper.Map<CreateTicketDto>(ticketObj);
-                return Ok(accountDto);
-            }
-
-
+            return BadRequest("Impossibile creare il ticket: Account non valido.");
         }
+        throw; // Altrimenti rilancia
+    }
+
+    // Mappatura con AutoMapper
+    var createdTicketDto = _mapper.Map<CreateTicketDto>(ticketObj);
+    return Ok(createdTicketDto);
+}
+
+
+
+
+
+
 
         // GET: api/Account/{id}
-            [HttpGet("{id}")]
-            public async Task<IActionResult> GetAccountById(int id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetAccountById(int id)
+        {
+            var query = new GetTicketById { Id = id };
+            var account = await _mediator.Send(query);
+
+            if (account == null)
             {
-                var query = new GetTicketById {Id = id };
-                var account = await _mediator.Send(query);
-
-                if (account == null)
-                {
-                    return NotFound("Account not found.");
-                }
-
-                return Ok(account);
+                return NotFound("Account not found.");
             }
 
-            // PUT: api/Account/{id}
-            [HttpPut("{id}")]
-            public async Task<IActionResult> UpdateAccount(int id, [FromBody] UpdateTicket command)
+            return Ok(account);
+        }
+
+        // PUT: api/Account/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAccount(int id, [FromBody] UpdateTicket command)
+        {
+            if (command == null)
             {
-                if (command == null)
-                {
-                    return BadRequest("Account data is required.");
-                }
+                return BadRequest("Account data is required.");
+            }
 
             command.Id = Guid.Empty;
             var updatedAccount = await _mediator.Send(command);
 
-                if (updatedAccount == null)
-                {
-                    return NotFound("Account not found.");
-                }
-
-                return Ok(updatedAccount);
+            if (updatedAccount == null)
+            {
+                return NotFound("Account not found.");
             }
 
-            // DELETE: api/Account/Delete/{id}
-            [HttpDelete("Delete/{id}")]
-            public async Task<IActionResult> DeleteConfirmed(int id)
+            return Ok(updatedAccount);
+        }
+
+        // DELETE: api/Account/Delete/{id}
+        [HttpDelete("Delete/{id}")]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var deleteAccountCommand = new DeleteTicket { Id = id };
+            var result = await _mediator.Send(deleteAccountCommand);
+
+            if (result != null)
             {
-                var deleteAccountCommand = new DeleteTicket { Id = id };
-                var result = await _mediator.Send(deleteAccountCommand);
-
-                if (result != null)
-                {
-                    return Ok(new { message = "Account eliminato con successo" });
-                }
-
-                return BadRequest("Account deletion failed.");
+                return Ok(new { message = "Account eliminato con successo" });
             }
 
-            // GET: api/Account/search
-            [HttpGet("search")]
-            public async Task<IActionResult> Search([FromQuery] string nome)
+            return BadRequest("Account deletion failed.");
+        }
+
+        // GET: api/Account/search
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string nome)
+        {
+            if (string.IsNullOrWhiteSpace(nome))
             {
-                if (string.IsNullOrWhiteSpace(nome))
-                {
-                    return BadRequest(new { message = "Il nome è obbligatorio." });
-                }
-
-                // 🔍 Controllo diretto se esiste almeno un account con quel nome
-                var exists = await _context.Tickets.AnyAsync(a => a.Nome == nome);
-
-                if (!exists)
-                {
-                    return NotFound(new { message = "Nessun account trovato con questo nome." });
-                }
-
-                // ✅ Se esiste, prosegui con MediatR
-                var query = new SearchTicket { Nome = nome };
-                var result = await _mediator.Send(query);
-
-                return Ok(result);
+                return BadRequest(new { message = "Il nome è obbligatorio." });
             }
 
-            // GET: api/Account/orderByName
-            [HttpGet("orderByName")]
-            public async Task<IActionResult> OrderByName()
+            // 🔍 Controllo diretto se esiste almeno un account con quel nome
+            var exists = await _context.Tickets.AnyAsync(a => a.Nome == nome);
+
+            if (!exists)
             {
-                var accounts = await _context.Tickets
-                    .OrderBy(a => a.Nome)
+                return NotFound(new { message = "Nessun account trovato con questo nome." });
+            }
+
+            var query = new SearchTicket { Nome = nome };
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+
+        // GET: api/Account/orderByName
+        [HttpGet("orderByName")]
+        public async Task<IActionResult> OrderByName()
+        {
+            var accounts = await _context.Tickets
+                .OrderBy(a => a.Nome)
+                .ToListAsync();
+            return Ok(accounts);
+        }
+
+        [HttpPost("upload")]
+        public IActionResult UploadBase64Image([FromBody] ImageUploadRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(_env.WebRootPath))
+                {
+                    return StatusCode(500, new { error = "WebRootPath is null. Verifica che wwwroot sia configurata correttamente." });
+                }
+                Console.WriteLine("WebRootPath = " + _env.WebRootPath);
+
+
+                var image = Base64Image.Parse(request.Base64Image);
+
+                string extension = image.ContentType switch
+                {
+                    "image/png" => ".png",
+                    "image/jpeg" => ".jpg",
+                    "image/gif" => ".gif",
+                    _ => ".bin"
+                };
+
+                string fileName = $"matt{Guid.NewGuid()}{extension}";
+                string folderPath = Path.Combine(_env.WebRootPath, "assets", "img");
+                Directory.CreateDirectory(folderPath);
+
+                Directory.CreateDirectory(folderPath);
+                string filePath = Path.Combine(folderPath, fileName);
+
+                System.IO.File.WriteAllBytes(filePath, image.FileContents);
+
+                return Ok(new { fileName });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("all")]
+        // GET: api/Account/all con mapper
+        public async Task<IActionResult> GetAllTickets()
+        {
+            try
+            {
+                var ticket = await _context.Tickets
                     .ToListAsync();
-                return Ok(accounts);
-            }
 
-            [HttpPost("upload")]
-            public IActionResult UploadBase64Image([FromBody] ImageUploadRequest request)
-            {
-                try
+                if (ticket == null || !ticket.Any())
                 {
-                    if (string.IsNullOrEmpty(_env.WebRootPath))
+                    return NotFound(new { message = "Nessun account trovato." });
+                }
+
+                var accountDtos = ticket.Select(ticket =>
+                {
+
+                    return new GetTicketDtoInput
                     {
-                        return StatusCode(500, new { error = "WebRootPath is null. Verifica che wwwroot sia configurata correttamente." });
-                    }
-                    Console.WriteLine("WebRootPath = " + _env.WebRootPath);
-
-
-                    var image = Base64Image.Parse(request.Base64Image);
-
-                    string extension = image.ContentType switch
-                    {
-                        "image/png" => ".png",
-                        "image/jpeg" => ".jpg",
-                        "image/gif" => ".gif",
-                        _ => ".bin"
+                        Nome = ticket.Nome,
+                        Descrizione = ticket.Descrizione,
+                        Email = ticket.Email,
+                        Categoria = ticket.Categoria,
+                        DataChiusura = ticket.DataChiusura,
+                        DataCreazione = ticket.DataCreazione,
+                        AccountId = ticket.AccountId
                     };
+                }).ToList();
 
-                    string fileName = $"matt{Guid.NewGuid()}{extension}";
-                    string folderPath = Path.Combine(_env.WebRootPath, "assets", "img");
-                    Directory.CreateDirectory(folderPath);
-
-                    Directory.CreateDirectory(folderPath);
-                    string filePath = Path.Combine(folderPath, fileName);
-
-                    System.IO.File.WriteAllBytes(filePath, image.FileContents);
-
-                    return Ok(new { fileName });
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest(new { error = ex.Message });
-                }
+                return Ok(accountDtos);
             }
-
-            [HttpGet("all")]
-            public async Task<IActionResult> GetAllAccounts()
+            catch (Exception ex)
             {
-                try
+                _logger.LogError(ex, "Errore durante il recupero degli account: {Message}", ex.Message);
+
+                return StatusCode(500, new
                 {
-                    var accounts = await _context.Tickets
-                        .Include(a => a.Nome) // Include corretto su collection di ruoli
-                        .ToListAsync();
-
-                    if (accounts == null || !accounts.Any())
-                    {
-                        return NotFound(new { message = "Nessun account trovato." });
-                    }
-
-                    var accountDtos = accounts.Select(account =>
-                    {
-                        Guid idGuid;
-                        if (!Guid.TryParse(account.Id.ToString(), out idGuid))
-                        {
-                            _logger.LogWarning($"Account ID non valido come GUID: {account.Id}");
-                            idGuid = Guid.Empty;
-                        }
-
-                        // Mappatura DTO con lista di ruoli (nomi ruoli)
-                        var ruoloNomi = account.Nome != ""
-                            ? new List<string> { account.Nome }
-                            : new List<string>();
-
-                        return new GetAccountDto
-                        {
-                            Email = account.Email,
-                            Password = account.Password,
-                        };
-                    }).ToList();
-
-                    return Ok(accountDtos);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Errore durante il recupero degli account: {Message}", ex.Message);
-
-                    return StatusCode(500, new
-                    {
-                        message = "Errore interno del server",
-                        error = ex.Message,
-                        inner = ex.InnerException?.Message,
-                        stackTrace = ex.StackTrace
-                    });
-                }
+                    message = "Errore interno del server",
+                    error = ex.Message,
+                    inner = ex.InnerException?.Message,
+                    stackTrace = ex.StackTrace
+                });
             }
+        }
 
-            // POST: account/approvaOreLavorate
-            [HttpPost("approvaOreLavorate")]
-            [Authorize(Roles = "Admin")]
-            public async Task<IActionResult> ApprovaOreLavorate([FromBody] CreateTicketDto CreateAccountDto)
+        // POST: account/approvaOreLavorate
+        [HttpPost("approvaOreLavorate")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ApprovaOreLavorate([FromBody] CreateTicketDto CreateAccountDto)
+        {
+            if (CreateAccountDto == null)
             {
-                if (CreateAccountDto == null)
-                {
-                    return BadRequest("Account data is required.");
-                }
-
-                // Trova l'account esistente
-                var account = await _context.Tickets.FirstOrDefaultAsync(a => a.AccountId == CreateAccountDto.ID_ticket);
-                if (account == null)
-                {
-                    return NotFound("Account not found.");
-                }
-
-                // Aggiorna le ore lavorate
-                var accountDto = _mapper.Map<CreateTicketDto>(account);
-
-                // Salva le modifiche nel database
-                _context.Tickets.Update(account);
-                await _context.SaveChangesAsync();
-
-                return Ok(accountDto);
+                return BadRequest("Account data is required.");
             }
 
+            // Trova l'account esistente
+            var account = await _context.Tickets.FirstOrDefaultAsync(a => a.AccountId == CreateAccountDto.AccountId);
+            if (account == null)
+            {
+                return NotFound("Account not found.");
+            }
+
+            // Aggiorna le ore lavorate
+            var accountDto = _mapper.Map<CreateTicketDto>(account);
+
+            // Salva le modifiche nel database
+            _context.Tickets.Update(account);
+            await _context.SaveChangesAsync();
+
+            return Ok(accountDto);
         }
 
     }
+
+}
