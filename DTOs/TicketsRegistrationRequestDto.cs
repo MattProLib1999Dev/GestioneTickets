@@ -16,7 +16,6 @@ public class TicketsRegistrationRequestDto
   [Required(ErrorMessage = "Password is required.")]
   [StringLength(50, ErrorMessage = "Name cannot be longer than 50 characters.")]
   public string Password { get; set; } = string.Empty;
-  public GetAllAccountDto GetAllAccountDto { get; set; } = new GetAllAccountDto();
 
 
 }
