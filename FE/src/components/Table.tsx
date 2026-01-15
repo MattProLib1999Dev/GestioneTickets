@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getAllAccount } from "../api/Account";
+import { getAccountById, getAllAccount } from "../api/Account";
 
 type Account = {
   email: string;
@@ -25,6 +25,27 @@ export function AccountsTable() {
     fetchAccounts();
   }, []);
 
+  function onDettaglio():
+    | React.MouseEventHandler<HTMLTableRowElement>
+    | undefined {
+    const handleClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
+      console.log("Riga cliccata:", event.currentTarget);
+      // Qui puoi aggiungere la logica per mostrare i dettagli dell'account
+      const fetchAccounts = async () => {
+        try {
+          const response = await getAccountById(event.currentTarget.id);
+          setAccounts(response.data as Account[]);
+        } catch (error: any) {
+          console.error(
+            "Errore nel recupero dei dettagli dell'account:",
+            error
+          );
+        }
+      };
+    };
+    return handleClick;
+  }
+
   return (
     <div>
       <h1>Tabella dei Dipendenti</h1>
@@ -39,7 +60,7 @@ export function AccountsTable() {
         </thead>
         <tbody>
           {accounts.map((acc) => (
-            <tr key={acc.email}>
+            <tr key={acc.email} onClick={onDettaglio()}>
               <td>{acc.nome}</td>
               <td>{acc.cognome}</td>
               <td>{acc.oreLavorate}</td>

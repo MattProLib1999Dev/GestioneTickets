@@ -43,31 +43,60 @@ namespace GestioneAccounts.Controllers
         }
 
         // GET: api/Account/{id}
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetAccountById(int id)
+        [HttpGet("id")]
+        public async Task<IActionResult> GetAccountById([FromQuery] int id)
         {
-            var account = await _context.Account
-                .Include(a => a.Nome)
-                .FirstOrDefaultAsync(a => a.Id == id);
-
-            if (account == null)
+           try
             {
-                return NotFound(new { message = "Account non trovato." });
+                var accounts = await _context.Account
+                    .ToListAsync();
+
+                if (accounts == null || !accounts.Any())
+                {
+                    return NotFound(new { message = "Nessun account trovato." });
+                }
+
+                var accountDtos = accounts.Select(account =>
+                {
+    
+                    return new Account
+                    {
+                        Nome = account.Nome,
+                        Cognome = account.Cognome,
+                        Email = account.Email,
+                        DataCreazione = account.DataCreazione,
+                        DataChiusura = account.DataChiusura,
+                        OreLavorate = account.OreLavorate,
+                    };
+                });
+
+                return Ok(accountDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Errore durante il recupero degli account: {Message}", ex.Message);
+
+                return StatusCode(500, new
+                {
+                    message = "Errore interno del server",
+                    error = ex.Message,
+                    inner = ex.InnerException?.Message,
+                    stackTrace = ex.StackTrace
+                });
             }
 
-            return Ok(account);
         }
 
         // PUT: api/Account/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAccount(int id, [FromBody] GetAccountDto command)
+        public async Task<IActionResult> UpdateAccount(int id, [FromBody] Account command)
         {
             if (command == null)
             {
                 return BadRequest("Account data is required.");
             }
 
-            command.AccountId = id;
+            command.Id = id;
             var updatedAccount = await _mediator.Send(command);
 
             if (updatedAccount == null)
