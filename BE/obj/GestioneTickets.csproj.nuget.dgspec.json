@@ -1,25 +1,31 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\matteo.proietti\\progetti\\Progetti personali e esercitazioni\\GestioneTicket\\BE\\GestioneTickets\\GestioneTickets.csproj": {}
+    "C:\\Users\\matte\\Desktop\\GestioneTicket\\GestioneTickets\\BE\\GestioneTickets.csproj": {}
   },
   "projects": {
-    "C:\\Users\\matteo.proietti\\progetti\\Progetti personali e esercitazioni\\GestioneTicket\\BE\\GestioneTickets\\GestioneTickets.csproj": {
+    "C:\\Users\\matte\\Desktop\\GestioneTicket\\GestioneTickets\\BE\\GestioneTickets.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\matteo.proietti\\progetti\\Progetti personali e esercitazioni\\GestioneTicket\\BE\\GestioneTickets\\GestioneTickets.csproj",
+        "projectUniqueName": "C:\\Users\\matte\\Desktop\\GestioneTicket\\GestioneTickets\\BE\\GestioneTickets.csproj",
         "projectName": "GestioneTickets",
-        "projectPath": "C:\\Users\\matteo.proietti\\progetti\\Progetti personali e esercitazioni\\GestioneTicket\\BE\\GestioneTickets\\GestioneTickets.csproj",
-        "packagesPath": "C:\\Users\\matteo.proietti\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\matteo.proietti\\progetti\\Progetti personali e esercitazioni\\GestioneTicket\\BE\\GestioneTickets\\obj\\",
+        "projectPath": "C:\\Users\\matte\\Desktop\\GestioneTicket\\GestioneTickets\\BE\\GestioneTickets.csproj",
+        "packagesPath": "C:\\Users\\matte\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\matte\\Desktop\\GestioneTicket\\GestioneTickets\\BE\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\matteo.proietti\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\matte\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -37,7 +43,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net8.0": {
@@ -95,6 +102,10 @@
               "target": "Package",
               "version": "[8.14.0, )"
             },
+            "Pomelo.EntityFrameworkCore.MySql": {
+              "target": "Package",
+              "version": "[9.0.0, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[9.0.4, )"
@@ -119,7 +130,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.408/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

@@ -19,9 +19,18 @@ var builder = WebApplication.CreateBuilder(args);
 // AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-// DbContext
+// DbContext sql server
+// builder.Services.AddDbContext<ApplicationDbContext>(options =>
+// options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// CORRETTO: Usa Pomelo per MySQL
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseMySql(
+        connectionString,
+        ServerVersion.AutoDetect(connectionString)
+    ));
 
 // Identity con ruoli
 builder.Services.AddIdentity<Account, Role>(options =>
@@ -109,5 +118,22 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Inizializzazione Ruoli
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
+    string[] roles = { "Admin", "User" };
+
+    foreach (var roleName in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(roleName))
+        {
+            await roleManager.CreateAsync(new Role { Name = roleName, NormalizedName = roleName.ToUpper() });
+        }
+    }
+}
+
+app.Run();
 
 app.Run();

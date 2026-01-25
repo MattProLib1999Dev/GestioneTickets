@@ -11,12 +11,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-
-
+using System.Linq;
 
 namespace GestioneTickets.Controllers
 {
@@ -32,16 +32,16 @@ namespace GestioneTickets.Controllers
         private readonly IMapper _mapper;
 
         public AuthManagmentController(
-    ILogger<AuthManagmentController> logger,
-    UserManager<Account> userManager,
-    RoleManager<Role> roleManager,  // <- aggiungi
-    IAccountRepository accountRepository,
-    IOptionsMonitor<JwtConfig> optionsMonitor,
-    IMapper mapper)
+            ILogger<AuthManagmentController> logger,
+            UserManager<Account> userManager,
+            RoleManager<Role> roleManager,
+            IAccountRepository accountRepository,
+            IOptionsMonitor<JwtConfig> optionsMonitor,
+            IMapper mapper)
         {
             _logger = logger;
             _userManager = userManager;
-            _roleManager = roleManager;      // <- assegna
+            _roleManager = roleManager;
             _accountRepository = accountRepository;
             _mapper = mapper;
             _jwtConfig = optionsMonitor.CurrentValue;
@@ -53,17 +53,10 @@ namespace GestioneTickets.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (registration == null)
-                return BadRequest("Dati di registrazione non validi.");
-
-            _logger.LogInformation($"Registration attempt for {registration.Email}");
-
-            // Controlla se l'email esiste già
             var emailExist = await _userManager.FindByEmailAsync(registration.Email);
             if (emailExist != null)
                 return BadRequest("Email già in uso.");
 
-            // Creazione dell'utente senza impostare direttamente la password
             var account = new Account
             {
                 UserName = registration.Email,
@@ -73,27 +66,16 @@ namespace GestioneTickets.Controllers
                 DataCreazione = DateTime.UtcNow
             };
 
-            // Passa la password a UserManager
             var result = await _userManager.CreateAsync(account, registration.Password);
 
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            // Controlla se il ruolo "User" esiste e, se non c'è, lo crea
-            if (!await _roleManager.RoleExistsAsync("User"))
-            {
-                await _roleManager.CreateAsync(new Role { Name = "User", NormalizedName = "USER" });
-            }
-
-            // Assegna il ruolo "User" all'utente appena creato
+            // Assegna il ruolo. Assicurati che il ruolo esista già nel DB (vedi passaggio sotto)
             await _userManager.AddToRoleAsync(account, "User");
 
             return Ok(new { Message = "Utente registrato con successo." });
         }
-
-
-
-
 
         [HttpPost("login")]
         [AllowAnonymous]
@@ -104,13 +86,14 @@ namespace GestioneTickets.Controllers
 
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
-                return Unauthorized(new { Message = "Invalid email or password." });
+                return Unauthorized(new { Message = "Email o password non validi." });
 
             var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
             if (!isPasswordValid)
-                return Unauthorized(new { Message = "Invalid email or password." });
+                return Unauthorized(new { Message = "Email o password non validi." });
 
-            var token = GenerateJwtToken(user);
+            var roles = await _userManager.GetRolesAsync(user);
+            var token = GenerateJwtToken(user, roles);
 
             return Ok(new
             {
@@ -119,20 +102,27 @@ namespace GestioneTickets.Controllers
             });
         }
 
-        private string GenerateJwtToken(Account account)
+        private string GenerateJwtToken(Account account, IList<string> roles)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtConfig.Secret);
 
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, account.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, account.Email),
+                new Claim(JwtRegisteredClaimNames.Email, account.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim("Id", account.Id.ToString()),
-                    new Claim(JwtRegisteredClaimNames.Sub, account.Email),
-                    new Claim(JwtRegisteredClaimNames.Email, account.Email),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                }),
+                Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.AddHours(4),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
@@ -143,6 +133,5 @@ namespace GestioneTickets.Controllers
             var token = jwtTokenHandler.CreateToken(tokenDescriptor);
             return jwtTokenHandler.WriteToken(token);
         }
-
     }
 }
