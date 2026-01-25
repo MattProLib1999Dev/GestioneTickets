@@ -43,50 +43,50 @@ namespace GestioneTickets.Controllers
         }
 
         [HttpPost("create")]
-[AllowAnonymous]
-[ProducesResponseType(typeof(CreateTicketDto), 200)]
-[ProducesResponseType(400)]
-public async Task<IActionResult> CreateTicket([FromBody] CreateTicketDto dto)
-{
-    if (dto == null)
-        return BadRequest("Ticket data is required.");
-
-    // Verifica che l'Account esista
-    var account = await _context.Users.FindAsync(dto.AccountId);
-    if (account == null)
-        return BadRequest("Account non trovato.");
-
-    // Crea nuovo ticket
-    var ticketObj = new Ticket
-    {
-        Nome = dto.Nome,
-        Descrizione = dto.Descrizione,
-        Email = dto.Email,
-        Categoria = dto.Categoria,
-        DataCreazione = dto.DataCreazione,
-        DataChiusura = dto.DataChiusura,
-        AccountId = dto.AccountId 
-    };
-
-    try
-    {
-        _context.Tickets.Add(ticketObj);
-        await _context.SaveChangesAsync();
-    }
-    catch (DbUpdateException ex)
-    {
-        // Gestione errori FK
-        if (ex.InnerException != null && ex.InnerException.Message.Contains("FK_Tickets_AspNetUsers_AccountId"))
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(CreateTicketDto), 200)]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> CreateTicket([FromBody] CreateTicketDto dto)
         {
-            return BadRequest("Impossibile creare il ticket: Account non valido.");
-        }
-        throw; // Altrimenti rilancia
-    }
+            if (dto == null)
+                return BadRequest("Ticket data is required.");
 
-    // Mappatura con AutoMapper
-    var createdTicketDto = _mapper.Map<CreateTicketDto>(ticketObj);
-    return Ok(createdTicketDto);
-}
+            // Verifica che l'Account esista
+            var account = await _context.Users.FindAsync(dto.AccountId);
+            if (account == null)
+                return BadRequest("Account non trovato.");
+
+            // Crea nuovo ticket
+            var ticketObj = new Ticket
+            {
+                Nome = dto.Nome,
+                Descrizione = dto.Descrizione,
+                Email = dto.Email,
+                Categoria = dto.Categoria,
+                DataCreazione = dto.DataCreazione,
+                DataChiusura = dto.DataChiusura,
+                AccountId = dto.AccountId
+            };
+
+            try
+            {
+                _context.Tickets.Add(ticketObj);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Gestione errori FK
+                if (ex.InnerException != null && ex.InnerException.Message.Contains("FK_Tickets_AspNetUsers_AccountId"))
+                {
+                    return BadRequest("Impossibile creare il ticket: Account non valido.");
+                }
+                throw; // Altrimenti rilancia
+            }
+
+            // Mappatura con AutoMapper
+            var createdTicketDto = _mapper.Map<CreateTicketDto>(ticketObj);
+            return Ok(createdTicketDto);
+        }
 
 
 
